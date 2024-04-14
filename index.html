@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Objetivo Principal</title>
+    <title>5W2H</title>
     <style>
-        body {
+    body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 20px;
@@ -13,42 +13,52 @@
         h1 {
             text-align: center;
         }
-        .key-results-container {
+        .container {
             max-width: 600px;
             margin: 0 auto;
         }
-        .key-result-input {
+        .input-field {
             width: 100%;
             padding: 10px;
             font-size: 16px;
             margin-bottom: 20px;
         }
-        .button-container1 {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .button-container2 {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .key-result-button {
+        .button {
             padding: 10px 20px;
             font-size: 16px;
             border: none;
             cursor: pointer;
         }
-        .key-result-button:hover {
+        .button:hover {
             opacity: 0.8;
         }
-        #saveKeyResultButton {
-            background-color: #0CAF50;
+        #saveButton {
+            background-color: #4CAF50;
             color: white;
         }
-        #deleteAllButton {
+        #clearButton {
             background-color: #f44336;
             color: white;
+        }
+        .actions-display {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+        }
+        .action-item {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 20px;
+        }
+        .action-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
         }
         #saveStateButton {
             background-color: #2196F3;
@@ -58,133 +68,112 @@
             background-color: #ff8ada;
             color: white;
         }
-        .key-results-display {
-            margin-top: 20px;
-            margin-bottom: 20px;
-            padding: 10px;
-            background-color: #f1f1f1;
-            border-radius: 5px;
-        }
-        .key-result-item {
-            margin-bottom: 10px;
-        }
-        .key-result-item input[type="checkbox"] {
-            margin-right: 10px;
-        }
-        .key-result-item .delete-button {
-            color: red;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-        .metrics-container {
-            margin-top: 40px;
-        }
-        .metrics-container h2 {
-            margin-bottom: 10px;
-        }
-        .metric-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .metric-item span {
-            margin-right: 10px;
-        }
     </style>
 </head>
 <body>
-    <h1>Objetivo Principal</h1>
-    <div class="key-results-container">
-        <input type="text" id="keyResultInput" class="key-result-input" placeholder="Digite o resultado chave">
-        <div class="button-container1">
-            <button id="saveKeyResultButton" class="key-result-button">Incluir Item</button>
-            <button id="deleteAllButton" class="key-result-button">Excluir Tudo</button>
+    <h1>5W2H</h1>
+    <div class="container">
+        <input type="text" id="whatInput" class="input-field" placeholder="O que será feito?">
+        <input type="text" id="whyInput" class="input-field" placeholder="Por que será feito?">
+        <input type="text" id="whereInput" class="input-field" placeholder="Onde será feito?">
+        <input type="date" id="whenInput" class="input-field">
+        <input type="text" id="whoInput" class="input-field" placeholder="Quem irá fazer?">
+        <input type="text" id="howInput" class="input-field" placeholder="Como será feito?">
+        <input type="number" id="howMuchInput" class="input-field" placeholder="Quanto irá custar?">
+        <button id="saveButton" class="button">Salvar Ação</button>
+        <button id="clearButton" class="button">Limpar Ações</button>
+        <div id="actionsDisplay" class="actions-display"></div>
+        <div class="button-container">
+            <button id="saveStateButton" class="button">Salvar Estado</button>
+            <button id="loadStateButton" class="button">Carregar Estado</button>
         </div>
-        <div id="keyResultsDisplay" class="key-results-display"></div>
-        <div class="button-container2">
-            <button id="saveStateButton" class="key-result-button">Salvar Estado</button>
-            <button id="loadStateButton" class="key-result-button">Carregar Estado</button>
-        </div>
-    </div>
-
-    <div class="metrics-container">
-        <h2>Métricas</h2>
-        <div id="metricsDisplay"></div>
     </div>
 
     <script>
-        const keyResultInput = document.getElementById('keyResultInput');
-        const saveKeyResultButton = document.getElementById('saveKeyResultButton');
-        const deleteAllButton = document.getElementById('deleteAllButton');
+        const whatInput = document.getElementById('whatInput');
+        const whyInput = document.getElementById('whyInput');
+        const whereInput = document.getElementById('whereInput');
+        const whenInput = document.getElementById('whenInput');
+        const whoInput = document.getElementById('whoInput');
+        const howInput = document.getElementById('howInput');
+        const howMuchInput = document.getElementById('howMuchInput');
+        const saveButton = document.getElementById('saveButton');
+        const clearButton = document.getElementById('clearButton');
+        const actionsDisplay = document.getElementById('actionsDisplay');
         const saveStateButton = document.getElementById('saveStateButton');
         const loadStateButton = document.getElementById('loadStateButton');
-        const keyResultsDisplay = document.getElementById('keyResultsDisplay');
 
-        saveKeyResultButton.addEventListener('click', saveKeyResult);
-        deleteAllButton.addEventListener('click', deleteAllKeyResults);
+        saveButton.addEventListener('click', saveAction);
+        clearButton.addEventListener('click', clearActions);
         saveStateButton.addEventListener('click', saveState);
         loadStateButton.addEventListener('click', loadState);
 
-        function saveKeyResult() {
-            const keyResult = keyResultInput.value.trim();
-            if (keyResult !== '') {
-                const keyResults = JSON.parse(localStorage.getItem('keyResults')) || [];
-                keyResults.push({ text: keyResult, completed: false });
-                localStorage.setItem('keyResults', JSON.stringify(keyResults));
-                keyResultInput.value = '';
-                renderKeyResults(keyResults);
-                updateMetrics();
+        function saveAction() {
+            const what = whatInput.value.trim();
+            const why = whyInput.value.trim();
+            const where = whereInput.value.trim();
+            const when = whenInput.value;
+            const who = whoInput.value.trim();
+            const how = howInput.value.trim();
+            const howMuch = howMuchInput.value.trim();
+
+            if (what !== '') {
+                const actions = JSON.parse(localStorage.getItem('actions')) || [];
+                actions.push({ what, why, where, when, who, how, howMuch });
+                localStorage.setItem('actions', JSON.stringify(actions));
+                clearInputs();
+                renderActions();
             }
         }
 
-        function deleteAllKeyResults() {
-            if (confirm('Tem certeza de que deseja excluir todos os resultados chave?')) {
-                localStorage.removeItem('keyResults');
-                keyResultsDisplay.innerHTML = '';
-                updateMetrics();
+        function clearActions() {
+            if (confirm('Tem certeza de que deseja limpar todas as ações?')) {
+                localStorage.removeItem('actions');
+                renderActions();
             }
         }
 
-        function renderKeyResults(keyResults = []) {
-            keyResultsDisplay.innerHTML = '';
-            keyResults.forEach((keyResult, index) => {
-                const keyResultItem = document.createElement('div');
-                keyResultItem.classList.add('key-result-item');
-
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.checked = keyResult.completed;
-                checkbox.addEventListener('change', () => {
-                    keyResult.completed = checkbox.checked;
-                    localStorage.setItem('keyResults', JSON.stringify(keyResults));
-                    updateMetrics();
-                });
-
-                const keyResultText = document.createElement('span');
-                keyResultText.textContent = keyResult.text;
-
-                const deleteButton = document.createElement('span');
-                deleteButton.classList.add('delete-button');
-                deleteButton.textContent = 'Excluir';
-                deleteButton.addEventListener('click', () => {
-                    if (confirm('Tem certeza de que deseja excluir este resultado chave?')) {
-                        keyResults.splice(index, 1);
-                        localStorage.setItem('keyResults', JSON.stringify(keyResults));
-                        renderKeyResults(keyResults);
-                        updateMetrics();
-                    }
-                });
-
-                keyResultItem.appendChild(checkbox);
-                keyResultItem.appendChild(keyResultText);
-                keyResultItem.appendChild(deleteButton);
-                keyResultsDisplay.appendChild(keyResultItem);
+        function renderActions() {
+            const actions = JSON.parse(localStorage.getItem('actions')) || [];
+            actionsDisplay.innerHTML = '';
+            actions.forEach(action => {
+                const actionItem = document.createElement('div');
+                actionItem.classList.add('action-item');
+                actionItem.innerHTML = `
+                    <p><strong>O que:</strong> ${action.what}</p>
+                    <p><strong>Por que:</strong> ${action.why}</p>
+                    <p><strong>Onde:</strong> ${action.where}</p>
+                    <p><strong>Quando:</strong> ${action.when}</p>
+                    <p><strong>Quem:</strong> ${action.who}</p>
+                    <p><strong>Como:</strong> ${action.how}</p>
+                    <p><strong>Quanto custa:</strong> ${action.howMuch}</p>
+                `;
+                actionsDisplay.appendChild(actionItem);
             });
+        }
+
+        function clearInputs() {
+            whatInput.value = '';
+            whyInput.value = '';
+            whereInput.value = '';
+            whenInput.value = '';
+            whoInput.value = '';
+            howInput.value = '';
+            howMuchInput.value = '';
         }
 
         function saveState() {
             const state = {
-                keyResults: JSON.parse(localStorage.getItem('keyResults')) || []
+                actions: JSON.parse(localStorage.getItem('actions')) || [],
+                inputs: {
+                    what: whatInput.value,
+                    why: whyInput.value,
+                    where: whereInput.value,
+                    when: whenInput.value,
+                    who: whoInput.value,
+                    how: howInput.value,
+                    howMuch: howMuchInput.value
+                }
             };
             const stateJson = JSON.stringify(state);
             const blob = new Blob([stateJson], { type: 'application/json' });
@@ -192,10 +181,8 @@
             const link = document.createElement('a');
             link.href = url;
 
-            // Solicitar o nome do arquivo ao usuário
-            const fileName = prompt('Digite o nome do arquivo:', 'objetivo-principal-state.json');
+            const fileName = prompt('Digite o nome do arquivo:', '5w2h-state.json');
 
-            // Verificar se o usuário forneceu um nome de arquivo válido
             if (fileName !== null && fileName.trim() !== '') {
                 link.download = fileName.trim();
                 link.style.display = 'none';
@@ -216,43 +203,27 @@
                 reader.onload = (e) => {
                     const stateJson = e.target.result;
                     const state = JSON.parse(stateJson);
-                    localStorage.setItem('keyResults', JSON.stringify(state.keyResults));
-                    renderKeyResults(state.keyResults);
-                    updateMetrics();
+                    localStorage.setItem('actions', JSON.stringify(state.actions));
+                    renderActions();
+                    loadInputValues(state.inputs);
                 };
                 reader.readAsText(file);
             });
             fileInput.click();
         }
 
-        function updateMetrics() {
-            const keyResults = JSON.parse(localStorage.getItem('keyResults')) || [];
-            const totalResults = keyResults.length;
-            const completedResults = keyResults.filter(keyResult => keyResult.completed).length;
-            const completionPercentage = totalResults > 0 ? Math.round((completedResults
-/ totalResults) * 100) : 0;
+        function loadInputValues(inputs) {
+            whatInput.value = inputs.what || '';
+            whyInput.value = inputs.why || '';
+            whereInput.value = inputs.where || '';
+            whenInput.value = inputs.when || '';
+            whoInput.value = inputs.who || '';
+            howInput.value = inputs.how || '';
+            howMuchInput.value = inputs.howMuch || '';
+        }
 
-        const metricsDisplay = document.getElementById('metricsDisplay');
-        metricsDisplay.innerHTML = `
-            <div class="metric-item">
-                <span>Total de Resultados:</span>
-                <span>${totalResults}</span>
-            </div>
-            <div class="metric-item">
-                <span>Resultados Concluídos:</span>
-                <span>${completedResults}</span>
-            </div>
-            <div class="metric-item">
-                <span>Porcentagem de Conclusão:</span>
-                <span>${completionPercentage}%</span>
-            </div>
-        `;
-    }
-
-    // Carregar os resultados chave salvos ao carregar a página
-    const keyResults = JSON.parse(localStorage.getItem('keyResults')) || [];
-    renderKeyResults(keyResults);
-    updateMetrics();
-</script>
+        // Carregar as ações salvas ao carregar a página
+        renderActions();
+    </script>
 </body>
 </html>
